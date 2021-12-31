@@ -30,7 +30,6 @@ pipeline {
     stage('Test') {
       steps {
         sh 'echo testing...'
-        sh 'python script/apim_redis.py'
       }
     }
 
