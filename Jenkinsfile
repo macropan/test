@@ -36,7 +36,11 @@ pipeline {
                     }
                 }
                 stage('apply') {
-                    sh("python apim_redis.py")
+                    steps {
+                        dir('test') {
+                            sh("python apim_redis.py")
+                        }
+                    }
                 }
             }
         }
