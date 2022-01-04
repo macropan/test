@@ -1,73 +1,66 @@
 pipeline {
-  agent any
+    agent none
 
-  stages {
-    
-    stage('Init') {
-      steps {
-        sh 'sh script/init.sh'
-      }
-    }
-//     post {
-//       changed {
-//          echo 'pipeline post changed by init'
-//       }
-//       always {
-//          echo 'pipeline post always by init'
-//       }
-//       success {
-//          echo 'pipeline post success by init'
-//       }
-//       // 省略其他条件块
-//     }
-  
-    stage('Build') {
-      steps {
-        sh 'sh script/build.sh'
-      }
+    options {
+        disableConcurrentBuilds()
     }
 
-    stage('Test') {
-      steps {
-        sh 'echo testing...'
-          
-        sh "docker run --privileged --rm --name test test /bin/sh -c 'cd / && pip install redis'"
-        sh "echo ${myImg.id} ||:"
-      }
-    }
+    stages {
+        stage('Init') {
+            steps {
+                sh 'sh script/init.sh'
+            }
+        }
+
+        stage('Test') {
+            agent {
+                docker {
+                    image("test")
+                    args("--user root")
+                }
+            }
+        }
+        
+        stage('permission') {
+            steps {
+                dir ('test') {
+                    sh("chmod +x script/*")
+                }
+            }
+            stage('plan') {
+                dir('test') {
+                    sh("pip install redis")
+                    sh("source .env")
+                    sh("python apim_redis.py")
+                }
+            }
+        }
 
 
+        stage('Deploy') {
+            steps {
+            sh 'echo deploying...'
+            //  sh 'sh script/deploy.sh'
+            }
+        }
+    }
 
-
-    stage('Deploy') {
-      steps {
-        sh 'echo deploying...'
-      //  sh 'sh script/deploy.sh'
-      }
+    post {
+        always {
+        echo 'success'
+        // dingTalk accessToken:'290c19dc81fce490ac73d1db02e36d7c177b6aa834b27cf8fd2c0a39a3238266', imageUrl:'', jenkinsUrl:'', message:'�~^~D建�~H~P�~J~_', notifyPeople:'Jenkins-PipeLine'
+        }
+        failure {
+        echo 'failure'
+        }
+        unstable {
+        echo 'unstable'
+        }
+        aborted {
+        echo 'aborted'
+        }
+        changed {
+        echo 'changed'
+        }
     }
-  }
-  
-  post { 
-    always {
-      //当此Pipeline成功时打印消息
-      echo 'success'
-      // dingTalk accessToken:'290c19dc81fce490ac73d1db02e36d7c177b6aa834b27cf8fd2c0a39a3238266', imageUrl:'', jenkinsUrl:'', message:'构建成功', notifyPeople:'Jenkins-PipeLine'
-    }
-    failure {
-      //当此Pipeline失败时打印消息
-      echo 'failure'
-    }
-    unstable {
-      //当此Pipeline 为不稳定时打印消息
-      echo 'unstable'
-    }
-    aborted {
-      //当此Pipeline 终止时打印消息
-      echo 'aborted'
-    }
-    changed {
-      //当pipeline的状态与上一次build状态不同时打印消息
-      echo 'changed'
-    }        
-  }
 }

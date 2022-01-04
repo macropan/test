@@ -2,7 +2,9 @@
 
 build() {
     echo "I am building, please wait...!!!"
+
     exec "$@"
+
 }
 
 
