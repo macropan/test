@@ -6,12 +6,6 @@ pipeline {
     }
 
     stages {
-        stage('Init') {
-            steps {
-                sh 'sh script/init.sh'
-            }
-        }
-
         stage('Test') {
             agent {
                 docker {
@@ -20,6 +14,13 @@ pipeline {
                 }
             }
             stages {
+                stage('Init') {
+                    steps {
+                        dir('test') {
+                            sh 'sh script/init.sh'
+                        }
+                    }
+                }
                 stage('permission') {
                     steps {
                         dir ('test') {
@@ -42,15 +43,15 @@ pipeline {
                         }
                     }
                 }
+                stage('Deploy') {
+                    steps {
+                        sh 'echo deploying...'
+                        //  sh 'sh script/deploy.sh'
+                    }
+                }
             }
         }
 
-        stage('Deploy') {
-            steps {
-            sh 'echo deploying...'
-            //  sh 'sh script/deploy.sh'
-            }
-        }
     }
 
     post {
