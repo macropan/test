@@ -27,18 +27,15 @@ pipeline {
       }
     }
 
-    try {
-      stage('Test') {
-        steps {
-          sh 'echo testing...'
+    stage('Test') {
+      steps {
+        sh 'echo testing...'
           
-          sh "docker run --privileged --rm --name test test /bin/sh -c 'cd / && pip install redis'"
-        }
+        sh "docker run --privileged --rm --name test test /bin/sh -c 'cd / && pip install redis'"
+        sh "echo ${myImg.id} ||:"
       }
     }
-    finally {
-      sh "echo ${myImg.id} ||:"
-    } 
+
 
 
 
