@@ -19,23 +19,27 @@ pipeline {
                     args("--user root")
                 }
             }
-        }
-        
-        stage('permission') {
-            steps {
-                dir ('test') {
-                    sh("chmod +x script/*")
+            stages {
+                stage('permission') {
+                    steps {
+                        dir ('test') {
+                            sh("chmod +x script/*")
+                        }
+                    }
                 }
-            }
-            stage('plan') {
-                dir('test') {
-                    sh("pip install redis")
-                    sh("source .env")
+                stage('plan') {
+                    steps {
+                        dir('test') {
+                            sh("source .env")
+                            sh("pip install redis")
+                        }
+                    }
+                }
+                stage('apply') {
                     sh("python apim_redis.py")
                 }
             }
         }
-
 
         stage('Deploy') {
             steps {
